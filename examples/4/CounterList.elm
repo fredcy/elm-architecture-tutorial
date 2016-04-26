@@ -1,9 +1,10 @@
-module CounterList where
+module CounterList exposing (..)
 
 import Counter
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App as Html
 
 
 -- MODEL
@@ -28,7 +29,7 @@ init =
 type Action
     = Insert
     | Remove ID
-    | Modify ID Counter.Action
+    | Modify ID Counter.Message
 
 
 update : Action -> Model -> Model
@@ -48,27 +49,27 @@ update action model =
     Modify id counterAction ->
       let updateCounter (counterID, counterModel) =
               if counterID == id then
-                  (counterID, Counter.update counterAction counterModel)
+                case counterAction of
+                  Counter.Local localAction ->
+                    Just (counterID, Counter.update localAction counterModel)
+                  Counter.Remove ->
+                    Nothing
               else
-                (counterID, counterModel)
+                Just (counterID, counterModel)
       in
-          { model | counters = List.map updateCounter model.counters }
+          { model | counters = List.filterMap updateCounter model.counters }
 
 
 -- VIEW
 
-view : Signal.Address Action -> Model -> Html
-view address model =
-  let insert = button [ onClick address Insert ] [ text "Add" ]
+view : Model -> Html Action
+view model =
+  let insert = button [ onClick Insert ] [ text "Add" ]
   in
-      div [] (insert :: List.map (viewCounter address) model.counters)
+      div [] (insert :: List.map (viewCounter) model.counters)
 
 
-viewCounter : Signal.Address Action -> (ID, Counter.Model) -> Html
-viewCounter address (id, model) =
-  let context =
-        Counter.Context
-          (Signal.forwardTo address (Modify id))
-          (Signal.forwardTo address (always (Remove id)))
-  in
-      Counter.viewWithRemoveButton context model
+viewCounter : (ID, Counter.Model) -> Html Action
+viewCounter (id, model) =
+  Counter.viewWithRemoveButton model |> Html.map (Modify id)
+    
