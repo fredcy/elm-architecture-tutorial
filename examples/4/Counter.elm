@@ -1,4 +1,4 @@
-module Counter exposing (Model, init, Action, Message(..), update, view, viewWithRemoveButton)
+module Counter exposing (Model, init, Msg(..), update, view, viewWithRemoveButton)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -18,7 +18,7 @@ init count = count
 
 type Action = Increment | Decrement
 
-type Message = Local Action | Remove
+type Msg = Local Action | Remove
 
 
 update : Action -> Model -> Model
@@ -33,7 +33,7 @@ update action model =
 
 -- VIEW
 
-view : Model -> Html Message
+view : Model -> Html Msg
 view model =
   div []
     [ button [ onClick (Local Decrement) ] [ text "-" ]
@@ -42,7 +42,7 @@ view model =
     ]
 
 
-viewWithRemoveButton : Model -> Html Message
+viewWithRemoveButton : Model -> Html Msg
 viewWithRemoveButton model =
   div []
     [ button [ onClick (Local Decrement) ] [ text "-" ]
@@ -53,7 +53,7 @@ viewWithRemoveButton model =
     ]
 
 
-countStyle : Attribute Message
+countStyle : Attribute Msg
 countStyle =
   style
     [ ("font-size", "20px")

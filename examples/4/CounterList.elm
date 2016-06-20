@@ -28,8 +28,7 @@ init =
 
 type Action
     = Insert
-    | Remove ID
-    | Modify ID Counter.Message
+    | Modify ID Counter.Msg
 
 
 update : Action -> Model -> Model
@@ -41,19 +40,15 @@ update action model =
           nextID = model.nextID + 1
       }
 
-    Remove id ->
-      { model |
-          counters = List.filter (\(counterID, _) -> counterID /= id) model.counters
-      }
-
     Modify id counterAction ->
-      let updateCounter (counterID, counterModel) =
+      let
+          updateCounter (counterID, counterModel) =
               if counterID == id then
                 case counterAction of
                   Counter.Local localAction ->
                     Just (counterID, Counter.update localAction counterModel)
                   Counter.Remove ->
-                    Nothing
+                    Nothing     -- so filterMap below will remove this counter
               else
                 Just (counterID, counterModel)
       in
